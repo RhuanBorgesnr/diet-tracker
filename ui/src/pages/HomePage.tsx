@@ -418,8 +418,8 @@ console.log(csvData)
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Objetivo</TableCell>
-                <TableCell>Calorias Diárias</TableCell>
+                <TableCell style={{fontWeight: 'bold'}}>Objetivo</TableCell>
+                <TableCell style={{fontWeight: 'bold'}}>Calorias Diárias</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -432,13 +432,13 @@ console.log(csvData)
                   
                 </TableRow>
               ))}
+            </TableBody>
+          </Table>
+          {/* <Button onClick={handleFoodClick}>Visualizar tabela de calorias</Button> */}
 
               <CSVLink data={csvData} filename="calories.csv" target="_blank">
               Download CSV
             </CSVLink>
-            </TableBody>
-          </Table>
-          {/* <Button onClick={handleFoodClick}>Visualizar tabela de calorias</Button> */}
         </PanelInfo2>
 
 

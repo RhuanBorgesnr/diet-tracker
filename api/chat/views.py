@@ -165,22 +165,35 @@ class QuestionViewSet(viewsets.ModelViewSet):
             if queryset:
                 question = queryset.latest('id')
                 imc = question.imc
-                tmb = question.tmb
+                tmb = question.tmb  # Retrieve tmb from the latest Question instance
+                activity_level = question.activity_level
                 answer = question.answer
                 calorie_data = question.calorie_data
                 calorie_data_dict = {
-                'Manter o peso': calorie_data.maintain_weight_calories,
-                'Perda de peso leve': calorie_data.mild_weight_loss,
-                'Perda de peso': calorie_data.wigth_loss,
-                'Perda de peso extrema': calorie_data.extreme_weight_loss,
-            }
-                return Response({"imc": imc, 'tmb': tmb, "answer": answer, "calorie_data" : calorie_data_dict}, status=status.HTTP_200_OK)
+                    'Manter o peso': calorie_data.maintain_weight_calories,
+                    'Perda de peso leve': calorie_data.mild_weight_loss,
+                    'Perda de peso': calorie_data.wigth_loss,
+                    'Perda de peso extrema': calorie_data.extreme_weight_loss,
+                }
+
+                # Calculate daily macronutrient recommendations using the retrieved tmb value
+                daily_macros = self.calculate_daily_macros(tmb, activity_level)
+
+                response_data = {
+                    "imc": imc,
+                    "tmb": tmb,
+                    "answer": answer,
+                    "calorie_data": calorie_data_dict,
+                    "daily_macros": daily_macros,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({}, status=status.HTTP_200_OK)
         except Question.DoesNotExist:
             return self._handle_error("Question not found for the given user ID.")
         except ValueError as e:
             return self._handle_error(str(e))
+
 
     @action(detail=False, methods=['POST'])
     def create_with_same_data(self, request):
@@ -239,3 +252,37 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 formatted_data.append(formatted_item)
 
         return Response(formatted_data)
+
+    def calculate_daily_macros(self, tmb, activity_level):
+        activity_multipliers = {
+            "Sedentário": 1.2,
+            "Levemente ativo": 1.375,
+            "Moderadamente ativo": 1.55,
+            "Muito ativo": 1.725,
+            "Extremamente ativo": 1.9,
+        }
+
+        activity_multiplier = activity_multipliers.get(activity_level, 1.2)
+        tdee = tmb * activity_multiplier
+
+        
+        carb_ratio = 0.4  # 40% of daily calories from carbohydrates
+        protein_ratio = 0.3  # 30% of daily calories from protein
+        fat_ratio = 0.3  # 30% of daily calories from fat
+
+        calories_from_carbs = carb_ratio * tdee
+        calories_from_protein = protein_ratio * tdee
+        calories_from_fat = fat_ratio * tdee
+
+        # Convert calories to grams (1 gram of carbohydrates/protein = 4 calories, 1 gram of fat = 9 calories)
+        carbs_grams = calories_from_carbs / 4
+        protein_grams = calories_from_protein / 4
+        fat_grams = calories_from_fat / 9
+
+        return {
+            "calories": tdee,
+            "carbs": carbs_grams,
+            "protein": protein_grams,
+            "fat": fat_grams,
+        }
+        

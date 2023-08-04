@@ -10,6 +10,9 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import QuestionForm from "./pages/QuestionsForm";
 import DietScreen from "./pages/DietScreenPage";
+import ChartPage from "./pages/ChartPage";
+import DailyMacrosPage from "./pages/ProteinsChart";
+
 
 
 function App() {
@@ -19,10 +22,13 @@ function App() {
         <AuthState>
           <Switch>
             <Route component={LoginPage} path="/login" />
+            <Route component={DailyMacrosPage} path="/chart-protein" />
             <PrivateRoute component={QuestionForm} path="/questions" />
             {/* <Route component={ChartProgressPage} path="/graph" /> */}
             <PrivateRoute component={HomePage} path="/" exact />
             <PrivateRoute component={DietScreen} path="/diet-screen" exact />
+            <PrivateRoute component={ChartPage} path="/graph" exact />
+
             <Route component={NotFoundPage} path="/not-found" exact />
             {/* <Route component={NotFoundPage} path="/not-found" exact /> */}
             {/* <PrivateRoute
