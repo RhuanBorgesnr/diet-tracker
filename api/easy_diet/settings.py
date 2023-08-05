@@ -12,10 +12,17 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import datetime
+import django_heroku
+import dotenv
+import dj_database_url
+django_heroku.settings(locals())
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+BASE_DIR = Path(__file__).resolve().root.root
 
+dotenv_file = os.path.join(BASE_DIR, ".env")
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -25,7 +32,8 @@ SECRET_KEY = 'n+1j9mt9s3)1rvvjqi3u6!(rnkpyzz3a6o6$vh0%_ciwv1rl(u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.21.246.28']
+ALLOWED_HOSTS = ['*']
+
 
 
 
@@ -43,6 +51,7 @@ INSTALLED_APPS = [
     'users',
     'corsheaders',
     'django_filters',
+    'django_heroku'
 ]
 
 MIDDLEWARE = [
@@ -55,7 +64,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+  'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 ROOT_URLCONF = 'easy_diet.urls'
 
@@ -81,13 +95,9 @@ WSGI_APPLICATION = 'easy_diet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
 
+DATABASES = {}
+DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
