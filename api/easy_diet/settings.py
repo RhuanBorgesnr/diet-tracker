@@ -15,10 +15,26 @@ import datetime
 import django_heroku
 import dotenv
 import dj_database_url
-django_heroku.settings(locals())
+from pathlib import Path
+import dj_database_url
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Rest of your code...
+
+# Load .env file if present
+# dotenv_file = os.path.join(BASE_DIR, ".env")
+# if os.path.isfile(dotenv_file):
+#     dotenv.load_dotenv(dotenv_file)
+
+# # Apply Django Heroku settings
+# django_heroku.settings(locals())
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
-BASE_DIR = Path(__file__).resolve().root.root
+
 
 dotenv_file = os.path.join(BASE_DIR, ".env")
 if os.path.isfile(dotenv_file):
@@ -68,6 +84,14 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
   'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+# Load .env file if present
+dotenv_file = os.path.join(BASE_DIR, ".env")
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
+
+# Apply Django Heroku settings
+django_heroku.settings(locals())
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
