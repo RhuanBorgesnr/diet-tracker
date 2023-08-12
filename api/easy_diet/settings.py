@@ -172,7 +172,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'users.User'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'build/static')
+    os.path.join(BASE_DIR,  'ui', 'public', 'build/static')
 ]
 
 
