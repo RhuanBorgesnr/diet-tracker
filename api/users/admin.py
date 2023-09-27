@@ -11,7 +11,9 @@ class UserAdmin(BaseUserAdmin):
             {
                 'fields': ( 
                     'name',
-                    'academia'
+                    'academia',
+                    'is_gym_owner'
+                    
                 )
             },
         ),
@@ -20,8 +22,12 @@ class UserAdmin(BaseUserAdmin):
     
 class GymAdmin(admin.ModelAdmin):
     list_display = ['name', 'address', 'cep']
-    # Defina as opções do admin para o modelo Question, se necessário
+    
 
-# Registre o modelo QuestionAdmin
+        
+        
+    
+
+
 admin.site.register(Gym)
 

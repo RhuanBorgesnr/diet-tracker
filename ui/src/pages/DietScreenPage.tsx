@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import api from '../infra/axios';
 import { API_HOST } from '../infra/consts';
 import { CSVLink } from 'react-csv';
+import { useParams } from 'react-router-dom';
 
 const Container = styled.div`
   display: flex;
@@ -46,20 +47,24 @@ const Message = styled.p`
 `;
 
 const DietaList = () => {
+
+  
   const [diet, setDiet] = useState<{ refeicao: string; descricao: string }[]>([]);
 
-  const user_id = JSON.parse(localStorage.getItem('user') || '{}');
-  const id = user_id.id || '';
+  // const user_id = JSON.parse(localStorage.getItem('user') || '{}');
+  // const id = user_id.id || '';
+  const { user_id } = useParams<{ user_id: string }>();
+
 
   useEffect(() => {
-    api.get(`${API_HOST}/api/questions/get_diet/?user=${id}`)
+    api.get(`${API_HOST}/api/questions/get_diet/?user=${user_id}`)
       .then(res => {
         setDiet(res.data); // Update the diet state with the response data
       })
       .catch(err => {
         // Handle error
       });
-  }, []);
+  }, [user_id]);
 
   const csvData = diet.map(item => ({ refeicao: item.refeicao, descricao: item.descricao }));
 

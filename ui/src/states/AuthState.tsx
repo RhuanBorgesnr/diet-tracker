@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useEffect } from "react";
+import React, { createContext, ReactNode, useCallback, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { IAuthState } from "../domain/auth";
@@ -25,10 +25,24 @@ const AuthState = ({ children }: AuthStateProps) => {
           username,
           password,
         });
-        toast.success("Login realizado com sucesso!");
         const token = response.data.token;
         saveToken(token);
-        history.push("/");
+
+        const userResponse = await api.get('/users/me/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const user = userResponse.data;
+        saveUser(user);
+        if (user.is_gym_owner) {
+
+          history.push("/dashboard");
+        } else {
+          history.push("/");
+        }
+
+        toast.success("Login realizado com sucesso!");
       } catch (err) {
         console.error("Erro durante o login:", err);
         toast.error("Erro durante o login. Verifique suas credenciais e tente novamente.");

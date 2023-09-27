@@ -12,6 +12,8 @@ import QuestionForm from "./pages/QuestionsForm";
 import DietScreen from "./pages/DietScreenPage";
 import ChartPage from "./pages/ChartPage";
 import DailyMacrosPage from "./pages/ProteinsChart";
+import Dashboard from "./pages/Dashboard";
+import UserHome from "./pages/UserHome";
 
 
 
@@ -24,9 +26,14 @@ function App() {
             <Route component={LoginPage} path="/login" />
             <Route component={DailyMacrosPage} path="/chart-protein" />
             <PrivateRoute component={QuestionForm} path="/questions" />
+            <PrivateRoute component={UserHome} path="/user-page/:user_id" />
+
             {/* <Route component={ChartProgressPage} path="/graph" /> */}
             <PrivateRoute component={HomePage} path="/" exact />
-            <PrivateRoute component={DietScreen} path="/diet-screen" exact />
+            <PrivateRoute component={Dashboard} path="/dashboard" exact />
+
+
+            <PrivateRoute component={DietScreen} path="/diet-screen/:user_id"  />
             <PrivateRoute component={ChartPage} path="/graph" exact />
 
             <Route component={NotFoundPage} path="/not-found" exact />

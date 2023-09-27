@@ -19,7 +19,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MailIcon from "@mui/icons-material/Mail";
-// import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Divider } from "@mui/material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
@@ -35,7 +34,6 @@ const Header = ({ onLogout }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const history = useHistory();
 
-  const user = "rhuan borges";
   const handleToggleDrawer = () => {
     setIsOpen(!isOpen);
   };
@@ -48,33 +46,35 @@ const Header = ({ onLogout }: HeaderProps) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
-        <Toolbar>
-          {/* <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={handleToggleDrawer}
-          >
-            <MenuIcon />
-          </IconButton> */}
-          <Typography
-            onClick={() => history.push("/")}
-            variant="h6"
-            component="div"
-          >
-            EasyDiet
-          </Typography>
-
-          <Avatar sx={{ ml: 4 }}>{user?.charAt(0)}</Avatar>
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            className="logout-button"
-          >
-            Sair
-          </Button>
+        <Toolbar style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton
+  style={{ fontSize: '32px' }} // Ajuste o valor de fontSize conforme desejado
+  edge="start"
+  color="inherit"
+  aria-label="menu"
+  onClick={handleToggleDrawer}
+>
+  <MenuIcon />
+</IconButton>
+            <Typography
+              onClick={() => history.push("/")}
+              variant="h6"
+              component="div"
+            >
+              WeDiet
+            </Typography>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={handleLogout}
+              className="logout-button"
+            >
+              Sair
+            </Button>
+            {/* <Avatar alt="User Avatar" src="/your-avatar-image.jpg" /> */}
+          </div>
         </Toolbar>
       </AppBar>
       <Drawer anchor="left" open={isOpen} onClose={handleToggleDrawer}>

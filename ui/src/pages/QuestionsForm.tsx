@@ -61,6 +61,10 @@ const QuestionForm: React.FC = () => {
         "Nenhuma",
       ],
     },
+    {
+      question: "Qual é o seu nível de atividade?",
+      options: ["Sedentário", "Levemente ativo", "Moderadamente ativo", "Muito ativo", "Extremamente ativo"],
+    },
   ];
 
   const handleSubmit = async (e: React.FormEvent, option: string) => {
@@ -78,7 +82,7 @@ const QuestionForm: React.FC = () => {
         const formattedAnswers = updatedAnswers.filter(
           (answer, index) => !!questions[index].inputType || answer !== ""
         );
-        const combinedText = `Eu tenho entre: ${formattedAnswers[0]} sou do sexo: ${formattedAnswers[1]} pratico exercícios: ${formattedAnswers[2]} e preciso de uma dieta para: ${formattedAnswers[3]}. Poderia me informar uma dieta?`;
+        const combinedText = `Eu tenho entre: ${formattedAnswers[0]} sou do sexo: ${formattedAnswers[1]} pratico exercícios: ${formattedAnswers[2]} e preciso de uma dieta para: ${formattedAnswers[3]}. Poderia me informar uma dieta com opções de alimentos entre cada refeição ?`;
 
         const response = await api.post(
           "http://localhost:8000/api/questions/",
@@ -86,12 +90,14 @@ const QuestionForm: React.FC = () => {
             question: combinedText,
             idade: formattedAnswers[0],
             sexo: formattedAnswers[1],
-            pratico_exercicio: formattedAnswers[2],
+            pratico_exercicio: formattedAnswers[8],
             objetivo_dieta: formattedAnswers[3],
             altura: formattedAnswers[4],
             peso: formattedAnswers[5],
             perda_peso: formattedAnswers[6],
             preferencias_restricoes: formattedAnswers[7],
+
+
           }
         );
 

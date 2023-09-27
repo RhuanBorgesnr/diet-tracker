@@ -22,6 +22,8 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import { CSVLink } from 'react-csv';
 
+import { useParams } from 'react-router-dom';
+
 const IconContainer = muiStyled('div')({
   display: 'flex',
   justifyContent: 'center',
@@ -210,7 +212,7 @@ const Button = styled.button`
 
 `;
 
-const HomePage: React.FC = () => {
+const UserHome: React.FC = () => {
   const [username, setUsername] = useState('');
   const [id, setId] = useState('');
   const [imc, setImc] = useState('');
@@ -223,8 +225,9 @@ const HomePage: React.FC = () => {
   const [dataCalories, setDataCalories] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // const { userData } = useContext(AuthContext);
+  const { user_id } = useParams<{ user_id: string }>();
 
+  console.log(user_id);
 
 
   const handleOpenModalInfo = () => {
@@ -235,16 +238,16 @@ const HomePage: React.FC = () => {
     setModalOpen(false);
   };
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const name = user.name || '';
-    const user_id = JSON.parse(localStorage.getItem('user') || '{}');
-    const id = user_id.id || '';
+    // const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // const name = user.name || '';
+    // const user_id = JSON.parse(localStorage.getItem('user') || '{}');
+    // const id = user_id.id || '';
 
-    setUsername(name);
-    setId(id);
-    fetchUserData(id);
-    fetchUserInfo(id);
-  }, []);
+    // setUsername(name);
+    setId(user_id);
+    fetchUserData(user_id);
+    fetchUserInfo(user_id);
+  }, [user_id]);
 
   const fetchUserData = async (id: any) => {
     try {
@@ -328,7 +331,7 @@ const HomePage: React.FC = () => {
   };
 
   const handleDietClick = () => {
-    window.location.href = '/diet-screen';
+    window.location.href = `/diet-screen/${user_id}`;
   };
 
   const handleFoodClick = () => {
@@ -498,5 +501,5 @@ console.log(csvData)
     </Container>
   );
 };
-export default HomePage;
+export default UserHome;
   

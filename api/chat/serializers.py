@@ -1,9 +1,11 @@
 
 from rest_framework import serializers
-from chat.models import Question
+from chat.models import Question, WeightLossHistory
 
 class QuestionSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.username', read_only=True)
+    nome_completo = serializers.CharField(source='user.name', read_only=True)
+    
     class Meta:
         model = Question
         fields = '__all__'
@@ -15,8 +17,8 @@ class ProgressChartSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
-        model = Question
-        fields = ['name', 'question', 'answer', 'weight', 'weight_loss', 'user', 'created_at']
+        model = WeightLossHistory
+        fields = ['weight', 'name', 'weight_loss', 'user', 'date']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -24,7 +26,7 @@ class ProgressChartSerializer(serializers.ModelSerializer):
         if action == 'group_graph':
             idealWeight = data['weight'] - data['weight_loss']
             formatted_data = {
-                'date': 'Mês {}'.format(instance.created_at),
+                'date': 'Mês {}'.format(instance.date),
                 'currentWeight': data['weight'],
                 'idealWeight': idealWeight
             }

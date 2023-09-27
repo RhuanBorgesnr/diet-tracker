@@ -6,17 +6,20 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from copy import deepcopy
 from django.utils import timezone
-from .models import Calories, Question
+from .models import Calories, Question, WeightLossHistory
 from .serializers import ProgressChartSerializer, QuestionSerializer
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import NotFound
+from .filters import QuestionFilter
+
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
+    filter_class = QuestionFilter
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['id', 'user']
 
@@ -28,9 +31,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
         perda_peso = float(self.request.data.get('perda_peso'))
         genero = self.request.data.get('sexo')
         activity_level = self.request.data.get('pratico_exercicio')
+
         imc = self._calc_imc(peso, altura)
         tmb = self._calc_tmb(peso, altura, idade, genero)
-        maintain_weight, mild_weight_loss, weight_loss, extreme_weight_loss  = self._calculate_calories(peso, altura, idade, genero, activity_level)
+        maintain_weight, mild_weight_loss, weight_loss, extreme_weight_loss = self._calculate_calories(
+            peso, altura, idade, genero, activity_level)
         headers = self._build_headers()
         data = self._build_data(question)
         try:
@@ -38,6 +43,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
             imc_formatado = format(imc_format, '.1f')
             response = self._send_request(headers, data)
             answer = self._get_answer(response)
+
+
+            WeightLossHistory.objects.create(
+                user=self.request.user,
+                weight=peso,
+                weight_loss=perda_peso
+            )
+
+            existing_question = Question.objects.filter(
+                user=self.request.user).first()
+            
             calorie_data = Calories.objects.create(
             maintain_weight_calories=maintain_weight,
             mild_weight_loss=mild_weight_loss,
@@ -45,19 +61,34 @@ class QuestionViewSet(viewsets.ModelViewSet):
             extreme_weight_loss=extreme_weight_loss,
         )
             
-            instance, created = serializer.save(
-                answer=answer,
-                tmb=tmb,
-                imc=imc_formatado,
-                user=self.request.user,
-                age=idade,
-                weight=peso,
-                weight_loss=perda_peso,
-                height=altura,
-                activity_level=activity_level,
-                calorie_data=calorie_data,
+            
+            if existing_question:
+                existing_question.question = question
+                existing_question.age = idade
+                existing_question.weight = peso
+                existing_question.weight_loss = perda_peso
+                existing_question.height = altura
+                existing_question.activity_level = activity_level
 
-            )
+                existing_question.save()
+                instance = existing_question
+                created = False
+            else:
+                instance = serializer.save(
+                    answer=answer,
+                    tmb=tmb,
+                    imc=imc_formatado,
+                    user=self.request.user,
+                    age=idade,
+                    weight=peso,
+                    weight_loss=perda_peso,
+                    height=altura,
+                    activity_level=activity_level,
+                    calorie_data=calorie_data,
+
+                )
+                created = True
+
             status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
             return Response(
                 {"answer": instance.answer, "imc": instance.imc},
@@ -68,7 +99,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     def _build_headers(self):
         return {
-            "Authorization": f"Bearer {'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'}",
+            "Authorization": f"Bearer {'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'}",
             "Content-Type": "application/json"
         }
 
@@ -149,7 +180,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'])
     def group_graph(self, request):
         user_id = int(request.GET.get('user'))
-        questions = Question.objects.filter(user=user_id)
+        
+        questions = WeightLossHistory.objects.filter(user=user_id)
 
         serializer = ProgressChartSerializer(
             questions, many=True, context={'action': 'group_graph'})
@@ -165,7 +197,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             if queryset:
                 question = queryset.latest('id')
                 imc = question.imc
-                tmb = question.tmb  # Retrieve tmb from the latest Question instance
+                tmb = question.tmb
                 activity_level = question.activity_level
                 answer = question.answer
                 calorie_data = question.calorie_data
@@ -175,10 +207,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                     'Perda de peso': calorie_data.wigth_loss,
                     'Perda de peso extrema': calorie_data.extreme_weight_loss,
                 }
-
-                # Calculate daily macronutrient recommendations using the retrieved tmb value
                 daily_macros = self.calculate_daily_macros(tmb, activity_level)
-
                 response_data = {
                     "imc": imc,
                     "tmb": tmb,
@@ -193,7 +222,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return self._handle_error("Question not found for the given user ID.")
         except ValueError as e:
             return self._handle_error(str(e))
-
 
     @action(detail=False, methods=['POST'])
     def create_with_same_data(self, request):
@@ -210,11 +238,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 )
             new_question = deepcopy(last_question)
             new_question.id = None
+            new_question.calorie_data_id = None
             new_question.weight = weight
             new_question.imc = self._calc_imc(weight, new_question.height)
             new_question.save()
-            
-            
             serializer = self.get_serializer(new_question)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Question.DoesNotExist:
@@ -266,15 +293,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
         tdee = tmb * activity_multiplier
 
         
-        carb_ratio = 0.4  # 40% of daily calories from carbohydrates
-        protein_ratio = 0.3  # 30% of daily calories from protein
-        fat_ratio = 0.3  # 30% of daily calories from fat
+        carb_ratio = 0.4
+        protein_ratio = 0.3
+        fat_ratio = 0.3
 
         calories_from_carbs = carb_ratio * tdee
         calories_from_protein = protein_ratio * tdee
         calories_from_fat = fat_ratio * tdee
-
-        # Convert calories to grams (1 gram of carbohydrates/protein = 4 calories, 1 gram of fat = 9 calories)
+        
         carbs_grams = calories_from_carbs / 4
         protein_grams = calories_from_protein / 4
         fat_grams = calories_from_fat / 9
@@ -285,4 +311,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
             "protein": protein_grams,
             "fat": fat_grams,
         }
-        
+   
+    @action(detail=False, methods=['GET'])
+    def list_users_gym(self, request):
+        gym_id = int(request.GET.get('gym_id'))
+        qs = self.queryset.filter(user__academia=gym_id)
+        serializer = self.serializer_class(qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
