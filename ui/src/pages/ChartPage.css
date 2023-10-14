@@ -1,0 +1,14 @@
+.weight-input-container {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.weight-input-label {
+  margin-right: 10px;
+}
+
+.weight-input-button {
+  background-color: #007bff;
+  color: white;
+}
